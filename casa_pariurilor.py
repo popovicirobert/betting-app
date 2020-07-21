@@ -1,80 +1,124 @@
 import requests
 from bs4 import BeautifulSoup
-from time import sleep
 import multiprocessing as mp
 
 
-CHARACTERS = ["1", "X", "2"]
-
-
-def func(curr_link):
-    page = requests.get(curr_link)
+def get_link_data(link, CHARACTERS):
+    page = requests.get(link)
     soup = BeautifulSoup(page.content, 'html.parser')
 
     pretenders = soup.find_all("div")
 
-    team_names = []
-    win = [[], [], []]
+    teams = []
+    coefficients = [[], [], []]
 
-    for i in pretenders:
-        if "class" in i.attrs and "psk-sport-group" in i.attrs["class"]:
-            aux = i.find_all("div")
-            x = ""
-            y = ""
-            for j in aux:
-                if "class" in j.attrs and "event-header-team" in j.attrs["class"] and "top" in j.attrs["class"]:
-                    x = j.string.strip(' \n')
-                if "class" in j.attrs and "event-header-team" in j.attrs["class"] and "bottom" in j.attrs["class"]:
-                    y = j.string.strip(' \n')
-                    if x and y:
-                        team_names.append(x)  # numele echipelor
-                        team_names.append(y)
+    for element in pretenders:
+        if "class" in element.attrs and "psk-sport-group" in element.attrs["class"]:
+            child_elements = element.find_all("div")
 
-            for it, c in enumerate(CHARACTERS):
-                for j in aux:
-                    if "data-original-title" in j.attrs and j.attrs[
-                        "data-original-title"] == c and "data-pick" in j.attrs and j.attrs["data-pick"] == c:
-                        win[it].append(j.string.strip(' \n'))
+            team1, team2 = "", ""
+
+            for child in child_elements:
+                if "class" in child.attrs and\
+                        "event-header-team" in child.attrs["class"] and\
+                        "top" in child.attrs["class"]:
+
+                    team1 = child.string.strip(' \n\r')
+
+                if "class" in child.attrs and\
+                        "event-header-team" in child.attrs["class"] and\
+                        "bottom" in child.attrs["class"]:
+
+                    team2 = child.string.strip(' \n\r')
+
+
+                    if team1 and team2:
+                        teams.append(team1)  # numele echipelor
+                        teams.append(team2)
+
+            if team1 and team2:
+                for index, character in enumerate(CHARACTERS):
+                    for child in child_elements:
+                        if "data-original-title" in child.attrs and\
+                                child.attrs["data-original-title"] == character and\
+                                "data-pick" in child.attrs and\
+                                child.attrs["data-pick"] == character:
+
+                            coefficients[index].append(child.string.strip(' \n\r'))
+
             break
 
-    return (team_names, win)
+    return (teams, coefficients)
+
+
+class CasaPariurilor:
+
+    def __init__(self):
+        self.BASE_URL = "https://www.casapariurilor.ro/"
+        self.MAIN_URL = "https://www.casapariurilor.ro/Sport/Fotbal/51?date=sve"
+
+        self.main_page = requests.get(self.MAIN_URL)
+        self.main_soup = BeautifulSoup(self.main_page.content, 'html.parser')
+
+        self.CHARACTERS = ["1", "X", "2"]
+
+    def get_links(self):
+        soccer = self.main_soup.find_all("ul")
+        links = []
+
+        for element in soccer:
+            if "class" in element.attrs and "inner-list" in element.attrs["class"]:
+                child_elements = element.find_all("a")
+                for child in child_elements:
+                    if "href" in child.attrs and child.attrs["href"] != "#":
+                        links.append(self.BASE_URL + child.attrs["href"])
+                break
+
+        return links
+
+    def get_data(self, links):
+        teams = []
+        coefficients = [[], [], []]
+
+        cpu_count = mp.cpu_count()
+
+        from itertools import repeat
+
+        pool = mp.Pool(cpu_count)
+        results = pool.starmap(get_link_data, zip(links, repeat(self.CHARACTERS)))
+        pool.close()
+
+        for team, coefficient in results:
+            for name in team:
+                teams.append(name)
+            for index in range(3):
+                for value in coefficient[index]:
+                    coefficients[index].append(value)
+
+        try:
+            assert(len(teams) % 2 == 0)
+            assert(len(coefficients[0]) == len(coefficients[1]))
+            assert(len(coefficients[1]) == len(coefficients[2]))
+            assert(len(teams) // 2 == len(coefficients[0]))
+        except AssertionError:
+            print('Soomthing went wrong!')
+
+        data = {}
+        for index in range(0, len(teams), 2):
+            win_index = index // 2
+            data[(teams[index], teams[index + 1])] = (coefficients[0][win_index],
+                                                      coefficients[1][win_index],
+                                                      coefficients[2][win_index])
+
+        return data
+
 
 
 if __name__ == '__main__':
-    main_link = "https://www.casapariurilor.ro/Sport/Fotbal/51?date=sve"
-    main_page = requests.get(main_link)
-    main_soup = BeautifulSoup(main_page.content, 'html.parser')
 
-    select_soccer = main_soup.find_all("ul")
-    links = []
-    for i in select_soccer:
-        if "class" in i.attrs and "inner-list" in i.attrs["class"]:
-            aux = i.find_all("a")
-            for j in aux:
-                if "href" in j.attrs and j.attrs["href"] != "#":
-                    links.append("https://www.casapariurilor.ro/" + j.attrs["href"])
-            break
-
-    team_names = []
-    win = [[], [], []]
-
-    cpu_count = mp.cpu_count()
-
-    pool = mp.Pool(cpu_count)
-    results = pool.map(func, [link for link in links])
-    pool.close()
-
-    for team, w in results:
-        for elem in team:
-            team_names.append(elem)
-        for index in range(3):
-            for elem in w[index]:
-                win[index].append(elem)
-
-    data = {}
-    for i in range(0, len(team_names), 2):
-        data[(team_names[i], team_names[i + 1])] = (win[0][i // 2], win[1][i // 2], win[2][i // 2])
+    site = CasaPariurilor()
+    links = site.get_links()
+    data = site.get_data(links)
+    print(data)
 
 
-    fd = open("output", "w")
-    fd.write(str(data))
