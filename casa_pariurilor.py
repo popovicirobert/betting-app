@@ -36,7 +36,9 @@ def get_link_data(link, CHARACTERS):
                         teams.append(team1)  # numele echipelor
                         teams.append(team2)
 
-            if team1 and team2:
+
+            if team1 and team2: # conditia asta nu era pusa in codul vechi si e importanta!!!
+
                 for index, character in enumerate(CHARACTERS):
                     for child in child_elements:
                         if "data-original-title" in child.attrs and\
