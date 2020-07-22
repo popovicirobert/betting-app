@@ -7,12 +7,11 @@ def get_link_data(link, CHARACTERS):
     page = requests.get(link)
     soup = BeautifulSoup(page.content, 'html.parser')
 
-    print(soup)
-
     pretenders = soup.find_all("span")
 
     teams = []
     coefficients = [[], [], []]
+
 
     for element in pretenders:
         if "class" in element.attrs and "event-name" in element.attrs["class"]:
@@ -23,8 +22,14 @@ def get_link_data(link, CHARACTERS):
                 teams.append(team1)
                 teams.append(team2)
 
-    import sys
-    sys.exit()
+    if teams:
+        pretenders = soup.find_all("a")
+        index = 0
+        for element in pretenders:
+            if "class" in element.attrs and "odds-button" in element.attrs["class"]:
+                if index % 6 < 3:
+                    coefficients[index % 6].append(float(element.attrs["data-value"]))
+                index += 1
 
     return (teams, coefficients)
 
@@ -64,11 +69,12 @@ class Fortuna:
 
         from itertools import repeat
 
-        '''pool = mp.Pool(cpu_count)
+        pool = mp.Pool(cpu_count)
         results = pool.starmap(get_link_data, zip(links, repeat(self.CHARACTERS)))
-        pool.close()'''
-        for link in links:
-            get_link_data(link, self.CHARACTERS)
+        pool.close()
+
+        '''for link in links:
+            get_link_data(link, self.CHARACTERS)'''
 
         for team, coefficient in results:
             for name in team:
@@ -101,4 +107,4 @@ if __name__ == '__main__':
     site = Fortuna()
     links = site.get_links()
     data = site.get_data(links)
-    #print(data)
+    print(data)
