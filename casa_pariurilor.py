@@ -93,6 +93,7 @@ class CasaPariurilor:
         for team, coefficient in results:
             for name in team:
                 teams.append(name)
+
             for index in range(3):
                 for value in coefficient[index]:
                     coefficients[index].append(value)
