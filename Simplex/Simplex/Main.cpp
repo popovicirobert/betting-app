@@ -25,7 +25,7 @@ int main(int argc, char** argv)
         assert(argc == 4);
 
         for (int i = 1; i < 4; i++) {
-            CT.push_back(std::stoi(argv[i]));
+            CT.push_back(std::stof(argv[i]));
         }
         LIM = std::stoi(argv[4]);
     }
@@ -66,12 +66,12 @@ int main(int argc, char** argv)
     }
     else
     {
-        for (auto it : x) 
+        for (auto it : x)
         {
             std::cout << it << " ";
         }
     }
-    
+
 
     return 0;
 }

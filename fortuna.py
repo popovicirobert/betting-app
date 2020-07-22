@@ -28,7 +28,7 @@ def get_link_data(link, CHARACTERS):
         for element in pretenders:
             if "class" in element.attrs and "odds-button" in element.attrs["class"]:
                 if index % 6 < 3:
-                    coefficients[index % 6].append(float(element.attrs["data-value"]))
+                    coefficients[index % 6].append(element.attrs["data-value"])
                 index += 1
 
     return (teams, coefficients)
