@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import multiprocessing as mp
+from string_manipulation import reduce_string
 
 
 def get_link_data(link, CHARACTERS):
@@ -23,14 +24,16 @@ def get_link_data(link, CHARACTERS):
                         "event-header-team" in child.attrs["class"] and\
                         "top" in child.attrs["class"]:
 
-                    team1 = child.string.strip(' \n\r')
+                    team1 = child.string
 
                 if "class" in child.attrs and\
                         "event-header-team" in child.attrs["class"] and\
                         "bottom" in child.attrs["class"]:
 
-                    team2 = child.string.strip(' \n\r')
+                    team2 = child.string
 
+                    team1 = reduce_string(team1)
+                    team2 = reduce_string(team2)
 
                     if team1 and team2:
                         teams.append(team1)  # numele echipelor

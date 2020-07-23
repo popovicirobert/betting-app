@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import multiprocessing as mp
+from string_manipulation import reduce_string
 
 
 def get_link_data(link, CHARACTERS):
@@ -16,8 +17,10 @@ def get_link_data(link, CHARACTERS):
     for element in pretenders:
         if "class" in element.attrs and "event-name" in element.attrs["class"]:
             team1, team2 = element.string.split('-')
-            team1 = team1.strip(' \n\r')
-            team2 = team2.strip(' \n\r')
+
+            team1 = reduce_string(team1)
+            team2 = reduce_string(team2)
+            
             if team1 and team2:
                 teams.append(team1)
                 teams.append(team2)

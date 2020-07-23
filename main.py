@@ -33,7 +33,7 @@ if __name__ == '__main__':
                 merged_data[match] = coefficients
 
     #print(len(merged_data))
-    #print(merged_data[('Bayern M.', 'Chelsea')])
+    #print(merged_data)
 
     
     import os
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
         with open('solutions.txt', 'r') as fd:
             bets = fd.readline().split(' ')
-            print(bets)
+            #print(bets)
 
             sum = 0
             for index in range(3):
