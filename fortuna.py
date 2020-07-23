@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import multiprocessing as mp
-from string_manipulation import reduce_string
+from string_detection import reduce_string
 
 
 def get_link_data(link, CHARACTERS):
