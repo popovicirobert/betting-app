@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <algorithm>
+
 typedef double DOUBLE;
 typedef std::vector<DOUBLE> VD;
 typedef std::vector<VD> VVD;

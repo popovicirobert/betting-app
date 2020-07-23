@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <algorithm>
 #include <iomanip>
@@ -22,12 +23,15 @@ int main(int argc, char** argv)
     }
     else
     {
-        assert(argc == 4);
+		//std::cerr << argc << "\n";
+        assert(argc == 5);
 
         for (int i = 1; i < 4; i++) {
             CT.push_back(std::stof(argv[i]));
+			//std::cerr << CT.back() << " ";
         }
-        LIM = std::stoi(argv[4]);
+        LIM = std::stof(argv[4]);
+		//std::cerr << LIM << "\n\n";
     }
 
 
@@ -42,10 +46,10 @@ int main(int argc, char** argv)
 
     LPSolver lp(a, b, c);
     std::vector<double> x;
+	lp.Solve(x);
 
     if (argc == 1)
     {
-        double answer = lp.Solve(x);
         //double sum = 0;
         for (auto it : x) {
             //sum += it;
@@ -66,9 +70,9 @@ int main(int argc, char** argv)
     }
     else
     {
-        for (auto it : x)
+        for (double it : x)
         {
-            std::cout << it << " ";
+            std::cout << std::fixed << std::setprecision(20) << it << " ";
         }
     }
 

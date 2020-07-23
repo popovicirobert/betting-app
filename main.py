@@ -13,6 +13,7 @@ if __name__ == '__main__':
     for site in sites:
         links = site.get_links()
         data_list.append(site.get_data(links))
+        #print(len(data_list[-1]))
 
     def convert_to_float(string):
         answer = float(string.replace(",", "."))
@@ -31,22 +32,28 @@ if __name__ == '__main__':
                     coefficients.append(value)
                 merged_data[match] = coefficients
 
-    import subprocess, shlex
-    subprocess.call(shlex.split('g++ ' + '-O2 ' + '-std=c++11 ' + './Simplex/Simplex/Main.cpp ' + './Simplex/Simplex/Simplex.cpp ' +
-                                './Simplex/Simplex/Simplex.h ' + '-o ' + './Simplex/Debug/Simplex.exe'))
+    #print(len(merged_data))
+    #print(merged_data[('Bayern M.', 'Chelsea')])
 
-    '''for match, coefficients in merged_data.items():
+    
+    import os
+    os.system('''g++ -O2 -std=c++11 ./Simplex/Simplex/Main.cpp ./Simplex/Simplex/Simplex.cpp ./Simplex/Simplex/Simplex.h -o ./Simplex/Debug/Simplex.exe''')
 
-        subprocess.call(shlex.split('./Simplex/Debug/Simplex.exe ' + str(coefficients[0]) + ' ' + str(coefficients[1]) +
-                                    ' ' + str(coefficients[2]) + ' ' + '2000' + ' ' +  '>' + ' ' + 'solutions.txt'))
+    for match, coefficients in merged_data.items():
 
-        with open('solutions.txt') as fd:
+        #print(match, coefficients)
+
+        os.system(f'(./Simplex/Debug/Simplex.exe {coefficients[0]} {coefficients[1]} {coefficients[2]} 2000) > solutions.txt')
+
+        with open('solutions.txt', 'r') as fd:
             bets = fd.readline().split(' ')
+            print(bets)
 
             sum = 0
             for index in range(3):
-                sum += bets[index] * (coefficients[index] - 3)
+                sum += float(bets[index]) * (float(coefficients[index]) - 3)
 
             average = sum / 3
             if average > 0:
-                print(average, match, end = '\n')'''
+                print(average, match, end = '\n')
+     
